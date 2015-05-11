@@ -52,7 +52,6 @@ int use_ssl = FALSE;
 
 #define DEFAULT_COMMAND_TIMEOUT	60			/* default timeout for execution of plugins */
 #define MAXFD			64
-#define NASTY_METACHARS		"|`&><'\\[]{};"
 #define howmany(x,y)	(((x)+((y)-1))/(y))
 #define MAX_LISTEN_SOCKS	16
 #define DEFAULT_LISTEN_QUEUE_SIZE	5
@@ -80,6 +79,8 @@ char	*nrpe_user = NULL;
 char	*nrpe_group = NULL;
 
 char	*allowed_hosts = NULL;
+
+char	*nasty_metachars = NULL;
 
 char	*pid_file = NULL;
 int	wrote_pid_file = FALSE;
@@ -638,6 +639,15 @@ int read_config_file(char *filename) {
 
 		else if (!strcmp(varname, "allow_weak_random_seed"))
 			allow_weak_random_seed = (atoi(varvalue) == 1) ? TRUE : FALSE;
+
+		else if (!strcmp(varname, "nasty_metachars")) {
+			nasty_metachars = strcompress(varvalue);
+
+			if (nasty_metachars == NULL) {
+				syslog(LOG_ERR, "Could not strcompress()");
+				return ERROR;
+			}
+		}
 
 		#ifdef HAVE_SSL
 		else if (!strcmp(varname, "ssl_ciphers"))
@@ -2166,7 +2176,7 @@ int contains_nasty_metachars(char *str) {
 	if (str == NULL)
 		return FALSE;
 
-	result = strcspn(str, NASTY_METACHARS);
+	result = strcspn(str, nasty_metachars ? nasty_metachars : "|`&><'\\[]{};\n");
 
 	if (result != strlen(str))
 		return TRUE;

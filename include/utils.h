@@ -57,4 +57,6 @@ void trim(char *, char *);
 int parse_ssl_protocols(int, char *);
 #endif
 
+char *strcompress(char *);
+
 #endif

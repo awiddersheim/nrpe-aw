@@ -105,6 +105,14 @@ allowed_hosts=127.0.0.1
 
 
 
+# NASTY META CHARACTERS
+# List of standard characters and escaped control characters that will force
+# an error if passed as arguments.
+
+#nasty_metachars=|`&><'\\[]{};\n
+
+
+
 # COMMAND ARGUMENT PROCESSING
 # This option determines whether or not the NRPE daemon will allow clients
 # to specify arguments to commands that are executed.  This option only works

@@ -461,6 +461,85 @@ int parse_ssl_protocols(int ssl_protocols, char *ssl_protocol_options) {
 }
 #endif
 
+/* function based on g_strcompress() from glib */
+char *strcompress(char *source) {
+	const char *p = source, *octal;
+	char *dest;
+	char *q;
+
+	if (source == NULL)
+		return NULL;
+
+	dest = malloc(strlen(source) + 1);
+
+	if (dest == NULL) {
+		syslog(LOG_ERR, "Could not malloc() in strcompress()");
+		return NULL;
+	}
+
+	q = dest;
+
+	while (*p) {
+		if (*p == '\\') {
+			p++;
+			switch (*p) {
+				case '\0':
+					syslog(LOG_WARNING, "strcompress: trailing \\");
+					goto out;
+
+				case '0':  case '1':  case '2':  case '3':  case '4':
+				case '5':  case '6':  case '7':
+					*q = 0;
+					octal = p;
+				while ((p < octal + 3) && (*p >= '0') && (*p <= '7')) {
+					*q = (*q * 8) + (*p - '0');
+					p++;
+				}
+				q++;
+				p--;
+				break;
+
+				case 'b':
+					*q++ = '\b';
+					break;
+
+				case 'f':
+					*q++ = '\f';
+					break;
+
+				case 'n':
+					*q++ = '\n';
+					break;
+
+				case 'r':
+					*q++ = '\r';
+					break;
+
+				case 't':
+					*q++ = '\t';
+					break;
+
+				case 'v':
+					*q++ = '\v';
+					break;
+
+				default:	    /* Also handles \" and \\ */
+					*q++ = *p;
+					break;
+			}
+		}
+		else
+			*q++ = *p;
+
+		p++;
+	}
+
+	out:
+	*q = 0;
+
+	return dest;
+}
+
 /* show license */
 void display_license(void) {
 	printf("This program is released under the GPL (see below) with the additional\n");
