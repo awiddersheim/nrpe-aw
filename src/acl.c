@@ -43,6 +43,10 @@
 
 #include "../include/acl.h"
 
+/* Pointers to ACL structs */
+static struct ip_acl *ip_acl_head, *ip_acl_prev;
+static struct dns_acl *dns_acl_head, *dns_acl_prev;
+
 /* This function checks if a char argumnet from valid char range.
  * Valid range is: ASCII only, a number or a letter, a space, a dot, a slash, a dash, a comma.
  *
@@ -56,7 +60,6 @@
  *  6 - char is a dash('-')
  *  7 - char is a comma(',')
  */
-
 int isvalidchar(int c) {
 	if (!isascii(c))
 		return 0;
