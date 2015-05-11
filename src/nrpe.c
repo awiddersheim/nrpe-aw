@@ -930,7 +930,6 @@ void wait_for_connections(void) {
 	char ipstr[INET6_ADDRSTRLEN];
 	int i;
 
-	struct sockaddr_in myname;
 	struct sockaddr_in *nptr;
 	struct sockaddr_in6 *nptr6;
 	struct sockaddr_storage addr;
@@ -979,8 +978,6 @@ void wait_for_connections(void) {
 	}
 	#endif
 	#endif
-
-	syslog(LOG_INFO, "Listening for connections on port %d\n", htons(myname.sin_port));
 
 	if (allowed_hosts)
 		syslog(LOG_INFO, "Allowing connections from: %s\n", allowed_hosts);
