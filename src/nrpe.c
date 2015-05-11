@@ -43,6 +43,7 @@ const SSL_METHOD *meth;
 #endif
 SSL_CTX *ctx;
 int use_ssl = TRUE;
+char *ssl_ciphers = NULL;
 #else
 int use_ssl = FALSE;
 #endif
@@ -158,15 +159,15 @@ int main(int argc, char **argv) {
 		printf("Usage: nrpe [-n] -c <config_file> [-4|-6] <mode>\n");
 		printf("\n");
 		printf("Options:\n");
-		printf(" -n	          = Do not use SSL\n");
+		printf(" -n		  = Do not use SSL\n");
 		printf(" -c <config_file> = Name of config file to use\n");
-		printf(" -4	          = Use ipv4 only\n");
-		printf(" -6	          = Use ipv6 only\n");
-		printf(" <mode>           = One of the following operating modes:\n");
-		printf("   -i	          =    Run as a service under inetd or xinetd\n");
-		printf("   -d	          =    Run as a standalone daemon\n");
+		printf(" -4		  = Use ipv4 only\n");
+		printf(" -6		  = Use ipv6 only\n");
+		printf(" <mode>		  = One of the following operating modes:\n");
+		printf("   -i		  =    Run as a service under inetd or xinetd\n");
+		printf("   -d		  =    Run as a standalone daemon\n");
 		/* Updates help section to indicate how to start under SRC on AIX */
-		printf("   -d -s          =    Run as a subsystem under AIX\n");
+		printf("   -d -s	  =    Run as a subsystem under AIX\n");
 		printf("\n");
 		printf("Notes:\n");
 		printf("This program is designed to process requests from the check_nrpe\n");
@@ -260,8 +261,8 @@ int main(int argc, char **argv) {
 		/* use only TLSv1 protocol */
 		SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 
-		/* use anonymous DH ciphers */
-		SSL_CTX_set_cipher_list(ctx, "ADH");
+		/* set SSL ciphers */
+		SSL_CTX_set_cipher_list(ctx, ssl_ciphers ? ssl_ciphers : "ADH");
 		dh = get_dh512();
 		SSL_CTX_set_tmp_dh(ctx, dh);
 		DH_free(dh);
@@ -621,6 +622,11 @@ int read_config_file(char *filename) {
 
 		else if (!strcmp(varname, "allow_weak_random_seed"))
 			allow_weak_random_seed = (atoi(varvalue) == 1) ? TRUE : FALSE;
+
+		#ifdef HAVE_SSL
+		else if(!strcmp(varname,"ssl_ciphers"))
+			ssl_ciphers=strdup(varvalue);
+		#endif
 
 		else if (!strcmp(varname, "pid_file"))
 			pid_file = strdup(varvalue);

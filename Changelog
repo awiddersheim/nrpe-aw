@@ -6,6 +6,7 @@ NRPE Changelog
 -----------------
 ENHANCEMENTS
 - Added listen_queue_size as configuration option (Vadim Antipov, Kaspersky Lab)
+- Added ability to configure SSL Ciphers as a configuration option.
 
 FIXES
 - Added ifdefs for complete_SSL_shutdown to compile without SSL. (Matthew L. Daniel)
