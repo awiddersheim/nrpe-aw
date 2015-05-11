@@ -49,13 +49,9 @@ int use_ssl = TRUE;
 int use_ssl = FALSE;
 #endif
 
-
 int process_arguments(int, char **);
 void alarm_handler(int);
 int graceful_close(int, int);
-
-
-
 
 int main(int argc, char **argv) {
 	u_int32_t packet_crc32;
@@ -70,7 +66,6 @@ int main(int argc, char **argv) {
 	result = process_arguments(argc, argv);
 
 	if (result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE) {
-
 		if (result != OK)
 			printf("Incorrect command line arguments supplied\n");
 
@@ -87,7 +82,6 @@ int main(int argc, char **argv) {
 	}
 
 	if (result != OK || show_help == TRUE) {
-
 		printf("Usage: check_nrpe -H <host> [ -b <bindaddr> ] [-4] [-6] [-n] [-u] [-p <port>] [-t <timeout>] [-c <command>] [-a <arglist...>]\n");
 		printf("\n");
 		printf("Options:\n");
@@ -121,12 +115,10 @@ int main(int argc, char **argv) {
 	if (result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE)
 		exit(STATE_UNKNOWN);
 
-
 	/* generate the CRC 32 table */
 	generate_crc32_table();
 
 	#ifdef HAVE_SSL
-
 	/* initialize SSL */
 	if (use_ssl == TRUE) {
 		SSL_library_init();
@@ -143,7 +135,6 @@ int main(int argc, char **argv) {
 		/* use only TLSv1 protocol */
 		SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 	}
-
 	#endif
 
 	/* initialize alarm signal handling */
@@ -160,7 +151,6 @@ int main(int argc, char **argv) {
 		result = STATE_OK;
 
 	#ifdef HAVE_SSL
-
 	/* do SSL handshake */
 	if (result == STATE_OK && use_ssl == TRUE) {
 		if ((ssl = SSL_new(ctx)) != NULL) {
@@ -198,7 +188,6 @@ int main(int argc, char **argv) {
 
 	/* we're connected and ready to go */
 	if (result == STATE_OK) {
-
 		/* clear the packet buffer */
 		bzero(&send_packet, sizeof(send_packet));
 
@@ -216,9 +205,7 @@ int main(int argc, char **argv) {
 		calculated_crc32 = calculate_crc32((char *)&send_packet, sizeof(send_packet));
 		send_packet.crc32_value = (u_int32_t)htonl(calculated_crc32);
 
-
 		/***** ENCRYPT REQUEST *****/
-
 
 		/* send the packet */
 		bytes_to_send = sizeof(send_packet);
@@ -233,7 +220,6 @@ int main(int argc, char **argv) {
 			if (rc < 0)
 				rc = -1;
 		}
-
 		#endif
 
 		if (rc == -1) {
@@ -251,7 +237,6 @@ int main(int argc, char **argv) {
 		#ifdef HAVE_SSL
 		else
 			rc = SSL_read(ssl, &receive_packet, bytes_to_recv);
-
 		#endif
 
 		/* reset timeout */
@@ -259,14 +244,13 @@ int main(int argc, char **argv) {
 
 		/* close the connection */
 		#ifdef HAVE_SSL
-
 		if (use_ssl == TRUE) {
 			SSL_shutdown(ssl);
 			SSL_free(ssl);
 			SSL_CTX_free(ctx);
 		}
-
 		#endif
+
 		graceful_close(sd, 1000);
 
 		/* recv() error */
@@ -287,9 +271,7 @@ int main(int argc, char **argv) {
 			return STATE_UNKNOWN;
 		}
 
-
 		/***** DECRYPT RESPONSE *****/
-
 
 		/* check the crc 32 value */
 		packet_crc32 = ntohl(receive_packet.crc32_value);
@@ -335,8 +317,6 @@ int main(int argc, char **argv) {
 	return result;
 }
 
-
-
 /* process command line arguments */
 int process_arguments(int argc, char **argv) {
 	char optchars[MAX_INPUT_BUFFER];
@@ -381,7 +361,6 @@ int process_arguments(int argc, char **argv) {
 
 		/* process all arguments */
 		switch (c) {
-
 			case '?':
 			case 'h':
 				show_help = TRUE;
@@ -455,9 +434,7 @@ int process_arguments(int argc, char **argv) {
 
 	/* get the command args */
 	if (argindex > 0) {
-
 		for (c = argindex - 1; c < argc; c++) {
-
 			i = sizeof(query) - strlen(query) - 2;
 
 			if (i <= 0)
@@ -473,19 +450,15 @@ int process_arguments(int argc, char **argv) {
 	if (server_name == NULL && show_help == FALSE && show_version == FALSE  && show_license == FALSE)
 		return ERROR;
 
-
 	return OK;
 }
 
 
 
 void alarm_handler(int sig) {
-
 	printf("CHECK_NRPE: Socket timeout after %d seconds.\n", socket_timeout);
-
 	exit(timeout_return_code);
 }
-
 
 /* submitted by Mark Plaksin 08/31/2006 */
 int graceful_close(int sd, int timeout) {
@@ -497,7 +470,6 @@ int graceful_close(int sd, int timeout) {
 	shutdown(sd, SHUT_WR);
 
 	for (;;) {
-
 		FD_ZERO(&in);
 		FD_SET(sd, &in);
 		tv.tv_sec = timeout / 1000;
