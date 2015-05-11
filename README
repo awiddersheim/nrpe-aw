@@ -195,7 +195,7 @@ command definition for the check_nrpe plugin would look like this:
 define command{
 	command_name	check_nrpe
 	command_line	/usr/local/nagios/libexec/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
-	}
+}
 
 In any service definitions that use the nrpe plugin/daemon to
 get their results, you would set the service check command portion
@@ -207,7 +207,7 @@ define service{
 	service_description	someremoteservice
 	check_command		check_nrpe!yourcommand
 	... etc ...
-	}
+}
 
 where "yourcommand" is a name of a command that you define in
 your nrpe.cfg file on the remote host (see the docs in the
