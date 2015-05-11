@@ -116,9 +116,18 @@ int main(int argc, char **argv) {
 	#endif
 
 	/* set some environment variables */
-	asprintf(&env_string, "NRPE_MULTILINESUPPORT=1");
+	result = asprintf(&env_string, "NRPE_MULTILINESUPPORT=1");
+	if (result == -1) {
+		fprintf(stderr, "Could not run asprintf()");
+		return STATE_CRITICAL;
+	}
 	putenv(env_string);
-	asprintf(&env_string, "NRPE_PROGRAMVERSION=%s", PROGRAM_VERSION);
+
+	result = asprintf(&env_string, "NRPE_PROGRAMVERSION=%s", PROGRAM_VERSION);
+	if (result == -1) {
+		fprintf(stderr, "Could not run asprintf()");
+		return STATE_CRITICAL;
+	}
 	putenv(env_string);
 
 	/* process command-line args */
@@ -192,14 +201,16 @@ int main(int argc, char **argv) {
 
 	/* make sure the config file uses an absolute path */
 	if (config_file[0] != '/') {
-
 		/* save the name of the config file */
 		strncpy(buffer, config_file, sizeof(buffer));
 		buffer[sizeof(buffer) - 1] = '\x0';
 
 		/* get absolute path of current working directory */
 		strcpy(config_file, "");
-		getcwd(config_file, sizeof(config_file));
+		if (getcwd(config_file, sizeof(config_file)) == NULL) {
+			syslog(LOG_ERR, "Could not getcwd() - %s", strerror(errno));
+			return STATE_CRITICAL;
+		}
 
 		/* append a forward slash */
 		strncat(config_file, "/", sizeof(config_file) - 2);
@@ -302,8 +313,10 @@ int main(int argc, char **argv) {
 		open("/dev/null", O_WRONLY);
 		open("/dev/null", O_WRONLY);
 
-		chdir("/");
-		/*umask(0);*/
+		if (chdir("/") == -1) {
+			syslog(LOG_ERR, "Could not chdir() - %s", strerror(errno));
+			return STATE_CRITICAL;
+		}
 
 		/* handle signals */
 		signal(SIGQUIT, sighandler);
@@ -372,8 +385,10 @@ int main(int argc, char **argv) {
 		open("/dev/null", O_WRONLY);
 		open("/dev/null", O_WRONLY);
 
-		chdir("/");
-		/*umask(0);*/
+		if (chdir("/") == -1) {
+			syslog(LOG_ERR, "Could not chdir() - %s", strerror(errno));
+			return STATE_CRITICAL;
+		}
 
 		/* handle signals */
 		signal(SIGQUIT, sighandler);
@@ -1867,7 +1882,7 @@ int write_pid_file(void) {
 			else {
 				syslog(
 					LOG_ERR,
-					"There's already an NRPE server running (PID %lu).  Bailing out...",
+					"There's already an NRPE server running (PID %lu). Bailing out...",
 					(unsigned long)pid
 				);
 				return ERROR;
@@ -1878,11 +1893,17 @@ int write_pid_file(void) {
 	/* write new pid file */
 	if ((fd = open(pid_file, O_WRONLY | O_CREAT, 0644)) >= 0) {
 		sprintf(pbuf, "%d\n", (int)getpid());
-		write(fd, pbuf, strlen(pbuf));
+		result = write(fd, pbuf, strlen(pbuf));
 		close(fd);
+		if (result == -1) {
+			syslog(LOG_ERR, "Cannot write to pidfile '%s' - %s.", pid_file, strerror(errno));
+			return ERROR;
+		}
 		wrote_pid_file = TRUE;
-	} else
-		syslog(LOG_ERR, "Cannot write to pidfile '%s' - check your privileges.", pid_file);
+	} else {
+		syslog(LOG_ERR, "Cannot write to pidfile '%s' - check your privileges - %s.", pid_file, strerror(errno));
+		return ERROR;
+	}
 
 	return OK;
 }
