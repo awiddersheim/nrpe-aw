@@ -14,3 +14,5 @@ src/check_nrpe
 src/nrpe
 subst
 autom4te.cache
+*.swp
+*.swo
