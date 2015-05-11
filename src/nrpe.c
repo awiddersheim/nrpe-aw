@@ -927,7 +927,8 @@ void wait_for_connections(void) {
 	int maxfd = 0;
 	struct sockaddr_storage from;
 	socklen_t fromlen;
-	char ipstr[INET6_ADDRSTRLEN];
+	char *ipv4str = NULL;
+	char ipv6str[INET6_ADDRSTRLEN];
 	int i;
 
 	struct sockaddr_in *nptr;
@@ -1092,13 +1093,14 @@ void wait_for_connections(void) {
 						switch (addr.ss_family) {
 							case AF_INET:
 								nptr = (struct sockaddr_in *)&addr;
+								ipv4str = inet_ntoa(nptr->sin_addr);
 
 								/* log info to syslog facility */
 								if (debug == TRUE) {
 									syslog(
 										LOG_DEBUG,
 										"Connection from %s port %d",
-										inet_ntoa(nptr->sin_addr),
+										ipv4str,
 										nptr->sin_port
 									);
 								}
@@ -1108,16 +1110,16 @@ void wait_for_connections(void) {
 									/* log error to syslog facility */
 									syslog(
 										LOG_ERR,
-									       	"Host %s is not allowed to talk to us!",
-									       	inet_ntoa(nptr->sin_addr)
+										"Host %s is not allowed to talk to us!",
+										ipv4str
 									);
 
 									/* log info to syslog facility */
 									if (debug == TRUE) {
 										syslog(
 											LOG_DEBUG,
-										       	"Connection from %s closed.",
-										       	inet_ntoa(nptr->sin_addr)
+											"Connection from %s closed.",
+											ipv4str
 										);
 									}
 
@@ -1129,7 +1131,7 @@ void wait_for_connections(void) {
 									if (debug == TRUE) {
 										syslog(
 											LOG_DEBUG,
-										       	"Host address is in allowed_hosts"
+											"Host address is in allowed_hosts"
 										);
 									}
 
@@ -1141,16 +1143,16 @@ void wait_for_connections(void) {
 								nptr6 = (struct sockaddr_in6 *)&addr;
 
 								if (inet_ntop(AF_INET6,
-									      (const void *) & (nptr6->sin6_addr), ipstr,
-									      sizeof(ipstr)) == NULL)
-									strncpy(ipstr, "Unknown", sizeof(ipstr));
+									      (const void *) & (nptr6->sin6_addr), ipv6str,
+									      sizeof(ipv6str)) == NULL)
+									strncpy(ipv6str, "Unknown", sizeof(ipv6str));
 
 								/* log info to syslog facility */
 								if (debug == TRUE) {
 									syslog(
 										LOG_DEBUG,
 										"Connection from %s port %d",
-									       	ipstr,
+										ipv6str,
 										nptr6->sin6_port
 									);
 								}
@@ -1159,16 +1161,16 @@ void wait_for_connections(void) {
 									/* log error to syslog facility */
 									syslog(
 										LOG_ERR,
-									       	"Host %s is not allowed to talk to us!",
-									       	ipstr
+										"Host %s is not allowed to talk to us!",
+										ipv6str
 									);
 
 									/* log info to syslog facility */
 									if (debug == TRUE) {
 										syslog(
 											LOG_DEBUG,
-										       	"Connection from %s closed.",
-										       	ipstr
+											"Connection from %s closed.",
+											ipv6str
 										);
 									}
 
@@ -1180,7 +1182,7 @@ void wait_for_connections(void) {
 									if (debug == TRUE) {
 										syslog(
 											LOG_DEBUG,
-										       	"Host address is in allowed_hosts"
+											"Host address is in allowed_hosts"
 										);
 									}
 
@@ -1218,7 +1220,7 @@ void wait_for_connections(void) {
 								syslog(
 									LOG_DEBUG,
 									"Connection from %s closed.",
-								       	inet_ntoa(nptr->sin_addr)
+									ipv4str
 								);
 								break;
 
@@ -1226,7 +1228,7 @@ void wait_for_connections(void) {
 								syslog(
 									LOG_DEBUG,
 									"Connection from %s closed.",
-								       	ipstr
+									ipv6str
 								);
 								break;
 						}
