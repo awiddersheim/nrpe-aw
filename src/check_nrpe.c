@@ -267,7 +267,7 @@ int main(int argc, char **argv) {
 
 		/* receive underflow */
 		else if (bytes_to_recv < sizeof(receive_packet)) {
-			printf("CHECK_NRPE: Receive underflow - only %d bytes received (%d expected).\n", bytes_to_recv, sizeof(receive_packet));
+			printf("CHECK_NRPE: Receive underflow - only %d bytes received (%ld expected).\n", bytes_to_recv, sizeof(receive_packet));
 			return STATE_UNKNOWN;
 		}
 
