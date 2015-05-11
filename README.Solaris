@@ -1,7 +1,7 @@
 Compiling on Solaris
 
 Several changes may be necessary in order to compile NRPE on Solaris.
-This information is known to apply to Solaris 10 and may apply to other 
+This information is known to apply to Solaris 10 and may apply to other
 verisions of Solaris. This has been tested on Solaris 10 x86.
 
 There are three things that you may need to compile NRPE on Solaris:
@@ -13,6 +13,6 @@ There are three things that you may need to compile NRPE on Solaris:
 	3. Use gmake to build the code
 		$ gmake all
 
-Thanks to Kevin Pendleton at UtahSysAdmin.com 
+Thanks to Kevin Pendleton at UtahSysAdmin.com
 (http://www.utahsysadmin.com/2008/03/14/configuring-nagios-plugins-nrpe-on-solaris-10/)
 for the instructions on finding the SSL libraries.
