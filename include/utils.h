@@ -34,30 +34,23 @@
 
 #include "../include/config.h"
 
-
 void generate_crc32_table(void);
 unsigned long calculate_crc32(char *, int);
 
-void randomize_buffer(char *,int);
+void randomize_buffer(char *, int);
 
-int my_tcp_connect(char *,int,int *);
-int my_connect(const char *, struct sockaddr_storage *, u_short, int, 
-		const char *);
+int my_tcp_connect(char *, int, int *);
+int my_connect(const char *, struct sockaddr_storage *, u_short, int, const char *);
 
 void add_listen_addr(struct addrinfo **, int, char *, int);
 
 void strip(char *);
 
-int sendall(int,char *,int *);
-int recvall(int,char *,int *,int);
+int sendall(int, char *, int *);
+int recvall(int, char *, int *, int);
 
-char *my_strsep(char **,const char *);
+char *my_strsep(char **, const char *);
 
 void display_license(void);
 
 #endif
-
-
-
-
-

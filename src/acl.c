@@ -1,7 +1,7 @@
-/*-
+/*
  * acl.c - a small library for nrpe.c. It adds IPv4 subnets support to ACL in nrpe.
  * Copyright (c) 2011 Kaspersky Lab ZAO
- * Last Modified: 08-10-2011 by Konstantin Malov with Oleg Koreshkov's help 
+ * Last Modified: 08-10-2011 by Konstantin Malov with Oleg Koreshkov's help
  *
  * Description:
  * acl.c creates two linked lists. One is for IPv4 hosts and networks, another is for domain names.
@@ -59,52 +59,56 @@
  */
 
 int isvalidchar(int c) {
-        if (!isascii(c))
-                return 0;
+	if (!isascii(c))
+		return 0;
 
-        if (isdigit(c))
-                return 1;
+	if (isdigit(c))
+		return 1;
 
-        if (isalpha(c))
-                return 2;
+	if (isalpha(c))
+		return 2;
 
-        if (isspace(c))
-                return 3;
+	if (isspace(c))
+		return 3;
 
-        switch (c) {
-        case '.':
-                return 4;
-                break;
-        case '/':
-                return 5;
-                break;
-        case '-':
-                return 6;
-                break;
-        case ',':
-                return 7;
-                break;
-        default:
-                return 0;
-        }
+	switch (c) {
+		case '.':
+			return 4;
+			break;
+
+		case '/':
+			return 5;
+			break;
+
+		case '-':
+			return 6;
+			break;
+
+		case ',':
+			return 7;
+			break;
+
+		default:
+			return 0;
+	}
 }
 
 /*
  * Get substring from allowed_hosts from s position to e position.
  */
 
-char * acl_substring(char *string, int s, int e) {
-    char *substring;
-    int len = e - s;
+char *acl_substring(char *string, int s, int e) {
+	char *substring;
+	int len = e - s;
 
-        if (len < 0)
-                return NULL;
+	if (len < 0)
+		return NULL;
 
-    if ( (substring = malloc(len + 1)) == NULL)
-        return NULL;
+	if ((substring = malloc(len + 1)) == NULL)
+		return NULL;
 
-    memmove(substring, string + s, len + 1);
-    return substring;
+	memmove(substring, string + s, len + 1);
+	return substring;
 }
 
 /*
@@ -131,125 +135,150 @@ char * acl_substring(char *string, int s, int e) {
  */
 
 int add_ipv4_to_acl(char *ipv4) {
-        int state = 0;
-        int octet = 0;
-        int index = 0;  /* position in data array */
-        int data[5];    /* array to store ip octets and mask */
-        int len = strlen(ipv4);
-        int i, c;
-        unsigned long ip, mask;
-        struct ip_acl *ip_acl_curr;
+	int state = 0;
+	int octet = 0;
+	int index = 0;  /* position in data array */
+	int data[5];    /* array to store ip octets and mask */
+	int len = strlen(ipv4);
+	int i, c;
+	unsigned long ip, mask;
+	struct ip_acl *ip_acl_curr;
 
-        /* Check for min and max IPv4 valid length */
-        if (len < 7 || len > 18)
-                return 0;
+	/* Check for min and max IPv4 valid length */
+	if (len < 7 || len > 18)
+		return 0;
 
-        /* default mask for ipv4 */
-        data[4] = 32;
+	/* default mask for ipv4 */
+	data[4] = 32;
 
-        /* Basic IPv4 format check */
-        for (i = 0; i < len; i++) {
-                /* Return 0 on error state */
-                if (state == -1)
-                        return 0;
+	/* Basic IPv4 format check */
+	for (i = 0; i < len; i++) {
+		/* Return 0 on error state */
+		if (state == -1)
+			return 0;
 
-                c = ipv4[i];
+		c = ipv4[i];
 
-                switch (c) {
-                case '0': case '1': case '2': case '3': case '4':
-                case '5': case '6': case '7': case '8': case '9':
-                        octet = octet * 10 + CHAR_TO_NUMBER(c);
-                        switch (state) {
-                        case 0: case 2: case 4: case 6: case 8:
-                                state++;
-                                break;
-                        }
-                        break;
-                case '.':
-                        switch (state) {
-                        case 1: case 3: case 5:
-                                data[index++] = octet;
-                                octet = 0;
-                                state++;
-                                break;
-                        default:
-                                state = -1;
-                        }
-                        break;
-                case '/':
-                        switch (state) {
-                        case 7:
-                                data[index++] = octet;
-                                octet = 0;
-                                state++;
-                                break;
-                        default:
-                                state = -1;
-                        }
-                        break;
-                default:
-                        state = -1;
-                }
-        }
+		switch (c) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				octet = octet * 10 + CHAR_TO_NUMBER(c);
 
-        /* Exit state handling */
-        switch (state) {
-        case 7: case 9:
-                data[index] = octet;
-                break;
-        default:
-                /* Bad states */
-                return 0;
-        }
+				switch (state) {
+					case 0:
+					case 2:
+					case 4:
+					case 6:
+					case 8:
+						state++;
+						break;
+				}
 
-        /*
-         * Final IPv4 format check.
-         */
-        for (i=0; i < 4; i++) {
-                if (data[i] < 0 || data[i] > 255) {
-                        syslog(LOG_ERR,"Invalid IPv4 address/network format(%s) in allowed_hosts option\n",ipv4);
-                        return 0;
-                }
-        }
+				break;
 
-        if (data[4] < 0 || data[4] > 32) {
-                syslog(LOG_ERR,"Invalid IPv4 network mask format(%s) in allowed_hosts option\n",ipv4);
-                return 0;
-        }
+			case '.':
+				switch (state) {
+					case 1:
+					case 3:
+					case 5:
+						data[index++] = octet;
+						octet = 0;
+						state++;
+						break;
 
-        /* Conver ip and mask to unsigned long */
-        ip = htonl((data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3]);
-        mask =  htonl(-1 << (32 - data[4]));
+					default:
+						state = -1;
+				}
 
-        /* Wrong network address */
-        if ( (ip & mask) != ip) {
-                syslog(LOG_ERR,"IP address and mask do not match in %s\n",ipv4);
-                return 0;
-        }
+				break;
 
-        /* Add addr to ip_acl list */
-        if ( (ip_acl_curr = malloc(sizeof(*ip_acl_curr))) == NULL) {
-                syslog(LOG_ERR,"Can't allocate memory for ACL, malloc error\n");
-                return 0;
-        }
+			case '/':
+				switch (state) {
+					case 7:
+						data[index++] = octet;
+						octet = 0;
+						state++;
+						break;
 
-        /* Save result in ACL ip list */
-        ip_acl_curr->family = AF_INET;
-        ip_acl_curr->addr.s_addr = ip;
-        ip_acl_curr->mask.s_addr = mask;
-        ip_acl_curr->next = NULL;
+					default:
+						state = -1;
+				}
 
-        if (ip_acl_head == NULL) {
-                ip_acl_head = ip_acl_curr;
-        } else {
-                ip_acl_prev->next = ip_acl_curr;
-        }
-        ip_acl_prev = ip_acl_curr;
-        return 1;
+				break;
+
+			default:
+				state = -1;
+		}
+	}
+
+	/* Exit state handling */
+	switch (state) {
+		case 7:
+		case 9:
+			data[index] = octet;
+			break;
+
+		default:
+			/* Bad states */
+			return 0;
+	}
+
+	/*
+	 * Final IPv4 format check.
+	 */
+	for (i = 0; i < 4; i++) {
+		if (data[i] < 0 || data[i] > 255) {
+			syslog(LOG_ERR, "Invalid IPv4 address/network format(%s) in allowed_hosts option\n", ipv4);
+			return 0;
+		}
+	}
+
+	if (data[4] < 0 || data[4] > 32) {
+		syslog(LOG_ERR, "Invalid IPv4 network mask format(%s) in allowed_hosts option\n", ipv4);
+		return 0;
+	}
+
+	/* Conver ip and mask to unsigned long */
+	ip = htonl((data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3]);
+	mask =  htonl(-1 << (32 - data[4]));
+
+	/* Wrong network address */
+	if ((ip & mask) != ip) {
+		syslog(LOG_ERR, "IP address and mask do not match in %s\n", ipv4);
+		return 0;
+	}
+
+	/* Add addr to ip_acl list */
+	if ((ip_acl_curr = malloc(sizeof(*ip_acl_curr))) == NULL) {
+		syslog(LOG_ERR, "Can't allocate memory for ACL, malloc error\n");
+		return 0;
+	}
+
+	/* Save result in ACL ip list */
+	ip_acl_curr->family = AF_INET;
+	ip_acl_curr->addr.s_addr = ip;
+	ip_acl_curr->mask.s_addr = mask;
+	ip_acl_curr->next = NULL;
+
+	if (ip_acl_head == NULL)
+		ip_acl_head = ip_acl_curr;
+	else
+		ip_acl_prev->next = ip_acl_curr;
+
+	ip_acl_prev = ip_acl_curr;
+	return 1;
 }
 
 /*
- * Add IPv6 host or network to IP ACL. Host will be added to ACL only if 
+ * Add IPv6 host or network to IP ACL. Host will be added to ACL only if
  * it has passed IPv6 format check.
  *
  */
@@ -266,88 +295,97 @@ int add_ipv6_to_acl(char *ipv6) {
 	int		x;
 	struct ip_acl	*ip_acl_curr;
 
-	/* Save temporary copy of ipv6 so we can use the original in error 
+	/* Save temporary copy of ipv6 so we can use the original in error
 		messages if needed */
 	ipv6tmp = strdup(ipv6);
-	if(NULL == ipv6tmp) {
-		syslog(LOG_ERR, "Memory allocation failed for copy of address: %s\n", 
-				ipv6);
+
+	if (NULL == ipv6tmp) {
+		syslog(
+			LOG_ERR,
+			"Memory allocation failed for copy of address: %s\n",
+		       ipv6
+		);
 		return 0;
-		}
+	}
 
 	/* Parse the address itself */
 	addrtok = strtok_r(ipv6tmp, "/", &addrsave);
-	if(inet_pton(AF_INET6, addrtok, &addr) <= 0) {
+
+	if (inet_pton(AF_INET6, addrtok, &addr) <= 0) {
 		syslog(LOG_ERR, "Invalid IPv6 address in ACL: %s\n", ipv6);
 		free(ipv6tmp);
 		return 0;
-		}
+	}
 
 	/* Check whether there is a netmask */
 	addrtok = strtok_r(NULL, "/", &addrsave);
-	if(NULL != addrtok) {
+
+	if (NULL != addrtok) {
 		/* If so, build a netmask */
 
 		/* Get the number of bits in the mask */
 		maskval = atoi(addrtok);
-		if(maskval < 0 || maskval > 128) {
+
+		if (maskval < 0 || maskval > 128) {
 			syslog(LOG_ERR, "Invalid IPv6 netmask in ACL: %s\n", ipv6);
 			free(ipv6tmp);
 			return 0;
-			}
+		}
 
 		/* Initialize to zero */
-		for(x = 0; x < nbytes; x++) {
+		for (x = 0; x < nbytes; x++)
 			mask.s6_addr[x] = 0;
-			}
 
 		/* Set mask based on mask bits */
 		byte = 0;
 		bit = 7;
-		while(maskval > 0) {
+
+		while (maskval > 0) {
 			mask.s6_addr[byte] |= 1 << bit;
 			bit -= 1;
-			if(bit < 0) {
+
+			if (bit < 0) {
 				bit = 7;
 				byte++;
-				}
+			}
+
 			maskval--;
-			}
 		}
-	else {
+	} else {
 		/* Otherwise, this is a single address */
-		for(x = 0; x < nbytes; x++) {
+		for (x = 0; x < nbytes; x++)
 			mask.s6_addr[x] = 0xFF;
-			}
-		}
+	}
 
 	/* Add address to ip_acl list */
 	ip_acl_curr = malloc(sizeof(*ip_acl_curr));
-	if(NULL == ip_acl_curr) {
+
+	if (NULL == ip_acl_curr) {
 		syslog(LOG_ERR, "Memory allocation failed for ACL: %s\n", ipv6);
 		return 0;
-		}
+	}
 
 	/* Save result in ACL ip list */
 	ip_acl_curr->family = AF_INET6;
-	for(x = 0; x < nbytes; x++) {
-		ip_acl_curr->addr6.s6_addr[x] = 
-				addr.s6_addr[x] & mask.s6_addr[x];
+
+	for (x = 0; x < nbytes; x++) {
+		ip_acl_curr->addr6.s6_addr[x] =
+		    addr.s6_addr[x] & mask.s6_addr[x];
 		ip_acl_curr->mask6.s6_addr[x] = mask.s6_addr[x];
-		}
+	}
+
 	ip_acl_curr->next = NULL;
 
-	if(NULL == ip_acl_head) {
+	if (NULL == ip_acl_head)
 		ip_acl_head = ip_acl_curr;
-		}
-	else {
+	else
 		ip_acl_prev->next = ip_acl_curr;
-		}
+
 	ip_acl_prev = ip_acl_curr;
 
 	free(ipv6tmp);
 	return 1;
-	}
+}
 
 /*
  * Add domain to DNS ACL list
@@ -378,77 +416,99 @@ int add_ipv6_to_acl(char *ipv6) {
  */
 
 int add_domain_to_acl(char *domain) {
-        int state = 0;
-        int len = strlen(domain);
-        int i, c;
+	int state = 0;
+	int len = strlen(domain);
+	int i, c;
 
-        struct dns_acl *dns_acl_curr;
+	struct dns_acl *dns_acl_curr;
 
-        if (len > 63)
-                return 0;
+	if (len > 63)
+		return 0;
 
-        for (i = 0; i < len; i++) {
-                c = domain[i];
-                switch (isvalidchar(c)) {
-                case 1:
-                        state = 1;
-                        break;
-                case 2:
-                        switch (state) {
-                        case 0: case 1: case 5: case 6:
-                                state = 1;
-                                break;
-                        case 2: case 3: case 4:
-                                state++;
-                                break;
-                        }
-                        break;
+	for (i = 0; i < len; i++) {
+		c = domain[i];
 
-                case 4:
-                        switch (state) {
-                        case 0: case 2:
-                                state = -1;
-                                break;
-                        default:
-                                state = 2;
-                        }
-                        break;
-                case 6:
-                        switch (state) {
-                        case 0: case 2:
-                                state = -1;
-                                break;
-                        default:
-                                state = 6;
-                        }
-                        break;
-                default:
-                        /* Not valid chars */
-                        return 0;
-                }
-        }
+		switch (isvalidchar(c)) {
+			case 1:
+				state = 1;
+				break;
 
-        /* Check exit code */
-        switch (state) {
-        case 1: case 4: case 5:
-                /* Add name to domain ACL list */
-                if ( (dns_acl_curr = malloc(sizeof(*dns_acl_curr))) == NULL) {
-                        syslog(LOG_ERR,"Can't allocate memory for ACL, malloc error\n");
-                        return 0;
-                }
-                strcpy(dns_acl_curr->domain, domain);
-                dns_acl_curr->next = NULL;
+			case 2:
+				switch (state) {
+					case 0:
+					case 1:
+					case 5:
+					case 6:
+						state = 1;
+						break;
 
-                if (dns_acl_head == NULL)
-                        dns_acl_head = dns_acl_curr;
-                else
-                        dns_acl_prev->next = dns_acl_curr;
+					case 2:
+					case 3:
+					case 4:
+						state++;
+						break;
+				}
 
-                dns_acl_prev = dns_acl_curr;
-                return 1;
-        default:
-                return 0;
-        }
+				break;
+
+			case 4:
+				switch (state) {
+					case 0:
+					case 2:
+						state = -1;
+						break;
+
+					default:
+						state = 2;
+				}
+
+				break;
+
+			case 6:
+				switch (state) {
+					case 0:
+					case 2:
+						state = -1;
+						break;
+
+					default:
+						state = 6;
+				}
+
+				break;
+
+			default:
+				/* Not valid chars */
+				return 0;
+		}
+	}
+
+	/* Check exit code */
+	switch (state) {
+		case 1:
+		case 4:
+		case 5:
+
+			/* Add name to domain ACL list */
+			if ((dns_acl_curr = malloc(sizeof(*dns_acl_curr))) == NULL) {
+				syslog(LOG_ERR, "Can't allocate memory for ACL, malloc error\n");
+				return 0;
+			}
+
+			strcpy(dns_acl_curr->domain, domain);
+			dns_acl_curr->next = NULL;
+
+			if (dns_acl_head == NULL)
+				dns_acl_head = dns_acl_curr;
+			else
+				dns_acl_prev->next = dns_acl_curr;
+
+			dns_acl_prev = dns_acl_curr;
+			return 1;
+
+		default:
+			return 0;
+	}
 }
 
 /* Checks connectiong host in ACL
@@ -468,146 +528,165 @@ int is_an_allowed_host(int family, void *host) {
 	struct hostent *he;
 
 	while (ip_acl_curr != NULL) {
-		if(ip_acl_curr->family == family) {
-			switch(ip_acl_curr->family) {
-			case AF_INET:
-				if((((struct in_addr *)host)->s_addr & 
-						ip_acl_curr->mask.s_addr) == 
-						ip_acl_curr->addr.s_addr) {
-					return 1;
-					}
-				break;
-			case AF_INET6:
-				nbytes = sizeof(ip_acl_curr->mask6.s6_addr) / 
-						sizeof(ip_acl_curr->mask6.s6_addr[0]);
-				for(x = 0; x < nbytes; x++) {
-					if((((struct in6_addr *)host)->s6_addr[x] & 
-							ip_acl_curr->mask6.s6_addr[x]) != 
-							ip_acl_curr->addr6.s6_addr[x]) {
-						break;
-						}
-					}
-				if(x == nbytes) { 
-					/* All bytes in host's address pass the netmask mask */
-					return 1;
-					}
-				break;
-				}
-			}
-		ip_acl_curr = ip_acl_curr->next;
-        }
+		if (ip_acl_curr->family == family) {
+			switch (ip_acl_curr->family) {
+				case AF_INET:
+					if ((((struct in_addr *)host)->s_addr &
+					        ip_acl_curr->mask.s_addr) ==
+					        ip_acl_curr->addr.s_addr)
+						return 1;
 
-	while(dns_acl_curr != NULL) {
-   		he = gethostbyname(dns_acl_curr->domain);
+					break;
+
+				case AF_INET6:
+					nbytes = sizeof(ip_acl_curr->mask6.s6_addr) /
+					         sizeof(ip_acl_curr->mask6.s6_addr[0]);
+
+					for (x = 0; x < nbytes; x++) {
+						if ((((struct in6_addr *)host)->s6_addr[x] &
+						        ip_acl_curr->mask6.s6_addr[x]) !=
+						        ip_acl_curr->addr6.s6_addr[x])
+							break;
+					}
+
+					if (x == nbytes) {
+						/* All bytes in host's address pass the netmask mask */
+						return 1;
+					}
+
+					break;
+			}
+		}
+
+		ip_acl_curr = ip_acl_curr->next;
+	}
+
+	while (dns_acl_curr != NULL) {
+		he = gethostbyname(dns_acl_curr->domain);
+
 		if (he == NULL) return 0;
 
 		while (*he->h_addr_list) {
-			switch(he->h_addrtype) {
-			case AF_INET:
-				memmove((char *)&addr,*he->h_addr_list++, sizeof(addr));
-				if (addr.s_addr == ((struct in_addr *)host)->s_addr) return 1;
-				break;
-			case AF_INET6:
-				memcpy((char *)&addr6, *he->h_addr_list++, sizeof(addr6));
-				for(x = 0; x < nbytes; x++) {
-					if(addr6.s6_addr[x] != 
-							((struct in6_addr *)host)->s6_addr[x]) {
-						break;
-						}
+			switch (he->h_addrtype) {
+				case AF_INET:
+					memmove((char *)&addr, *he->h_addr_list++, sizeof(addr));
+
+					if (addr.s_addr == ((struct in_addr *)host)->s_addr) return 1;
+
+					break;
+
+				case AF_INET6:
+					memcpy((char *)&addr6, *he->h_addr_list++, sizeof(addr6));
+
+					for (x = 0; x < nbytes; x++) {
+						if (addr6.s6_addr[x] !=
+						        ((struct in6_addr *)host)->s6_addr[x])
+							break;
 					}
-				if(x == nbytes) { 
-					/* All bytes in host's address match the ACL */
-					return 1;
+
+					if (x == nbytes) {
+						/* All bytes in host's address match the ACL */
+						return 1;
 					}
-				break;
-				}
+
+					break;
 			}
-		dns_acl_curr = dns_acl_curr->next;
 		}
-	return 0;
+
+		dns_acl_curr = dns_acl_curr->next;
 	}
 
-/* The trim() function takes a source string and copies it to the destination string,
- * stripped of leading and training whitespace. The destination string must be 
+	return 0;
+}
+
+/*
+ * The trim() function takes a source string and copies it to the destination string,
+ * stripped of leading and training whitespace. The destination string must be
  * allocated at least as large as the source string.
  */
-
-void trim( char *src, char *dest) {
+void trim(char *src, char *dest) {
 	char *sptr, *dptr;
 
-	for( sptr = src; isblank( *sptr) && *sptr; sptr++); /* Jump past leading spaces */
-	for( dptr = dest; !isblank( *sptr) && *sptr; ) {
+	for (sptr = src; isblank(*sptr) && *sptr; sptr++);   /* Jump past leading spaces */
+
+	for (dptr = dest; !isblank(*sptr) && *sptr;) {
 		*dptr = *sptr;
 		sptr++;
 		dptr++;
 	}
+
 	*dptr = '\0';
 	return;
 }
 
-/* This function splits allowed_hosts to substrings with comma(,) as a delimeter.
+/*
+ * This function splits allowed_hosts to substrings with comma(,) as a delimeter.
  * It doesn't check validness of ACL record (add_ipv4_to_acl() and add_domain_to_acl() do),
  * just trims spaces from ACL records.
  * After this it sends ACL records to add_ipv4_to_acl() or add_domain_to_acl().
  */
-
 void parse_allowed_hosts(char *allowed_hosts) {
-	char *hosts = strdup( allowed_hosts);	/* Copy since strtok* modifes original */
+	char *hosts = strdup(allowed_hosts);	/* Copy since strtok* modifes original */
 	char *saveptr;
 	char *tok;
 	const char *delim = ",";
 	char *trimmed_tok;
 
-	tok = strtok_r( hosts, delim, &saveptr);
-	while( tok) {
-		trimmed_tok = malloc( sizeof( char) * ( strlen( tok) + 1));
-		trim( tok, trimmed_tok);
-		if( strlen( trimmed_tok) > 0) {
-			if (!add_ipv4_to_acl(trimmed_tok) && !add_ipv6_to_acl(trimmed_tok) 
-					&& !add_domain_to_acl(trimmed_tok)) {
-				syslog(LOG_ERR,"Can't add to ACL this record (%s). Check allowed_hosts option!\n",trimmed_tok);
+	tok = strtok_r(hosts, delim, &saveptr);
+
+	while (tok) {
+		trimmed_tok = malloc(sizeof(char) * (strlen(tok) + 1));
+		trim(tok, trimmed_tok);
+
+		if (strlen(trimmed_tok) > 0) {
+			if (!add_ipv4_to_acl(trimmed_tok) && !add_ipv6_to_acl(trimmed_tok) && !add_domain_to_acl(trimmed_tok)) {
+				syslog(
+					LOG_ERR,
+					"Can't add to ACL this record (%s). Check allowed_hosts option!\n",
+					trimmed_tok
+				);
 			}
 		}
-		free( trimmed_tok);
-		tok = strtok_r(( char *)0, delim, &saveptr);
+
+		free(trimmed_tok);
+		tok = strtok_r((char *)0, delim, &saveptr);
 	}
 
-	free( hosts);
+	free(hosts);
 }
 
 /*
  * Converts mask in unsigned long format to two digit prefix
  */
-
 unsigned int prefix_from_mask(struct in_addr mask) {
-        int prefix = 0;
-        unsigned long bit = 1;
-        int i;
+	int prefix = 0;
+	unsigned long bit = 1;
+	int i;
 
-        for (i = 0; i < 32; i++) {
-                if (mask.s_addr & bit)
-                        prefix++;
+	for (i = 0; i < 32; i++) {
+		if (mask.s_addr & bit)
+			prefix++;
 
-                bit = bit << 1;
-        }
-        return (prefix);
+		bit = bit << 1;
+	}
+
+	return prefix;
 }
 
 /*
  * It shows all hosts in ACL lists
  */
-
 void show_acl_lists(void) {
-        struct ip_acl *ip_acl_curr = ip_acl_head;
-        struct dns_acl *dns_acl_curr = dns_acl_head;
+	struct ip_acl *ip_acl_curr = ip_acl_head;
+	struct dns_acl *dns_acl_curr = dns_acl_head;
 
-        while (ip_acl_curr != NULL) {
-                printf(" IP ACL: %s/%u %u\n", inet_ntoa(ip_acl_curr->addr), prefix_from_mask(ip_acl_curr->mask), ip_acl_curr->addr.s_addr);
-                ip_acl_curr = ip_acl_curr->next;
-        }
+	while (ip_acl_curr != NULL) {
+		printf(" IP ACL: %s/%u %u\n", inet_ntoa(ip_acl_curr->addr), prefix_from_mask(ip_acl_curr->mask), ip_acl_curr->addr.s_addr);
+		ip_acl_curr = ip_acl_curr->next;
+	}
 
-        while (dns_acl_curr != NULL) {
-                printf("DNS ACL: %s\n", dns_acl_curr->domain);
-                dns_acl_curr = dns_acl_curr->next;
-        }
+	while (dns_acl_curr != NULL) {
+		printf("DNS ACL: %s\n", dns_acl_curr->domain);
+		dns_acl_curr = dns_acl_curr->next;
+	}
 }

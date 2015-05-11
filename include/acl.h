@@ -1,7 +1,7 @@
 /*-
  * acl.c - header file for acl.c
  * Copyright (c) 2011 Kaspersky Lab ZAO
- * Last Modified: 08-10-2011 by Konstantin Malov with Oleg Koreshkov's help 
+ * Last Modified: 08-10-2011 by Konstantin Malov with Oleg Koreshkov's help
  *
  * License: GPL
  *
@@ -40,17 +40,17 @@
 #define CHAR_TO_NUMBER(c)   ((c) - '0')
 
 struct ip_acl {
-	int				family;
+	int family;
 	struct in_addr	addr;
 	struct in_addr	mask;
-	struct in6_addr	addr6;
-	struct in6_addr	mask6;
-	struct ip_acl   *next;
+	struct in6_addr addr6;
+	struct in6_addr mask6;
+	struct ip_acl	*next;
 };
 
 struct dns_acl {
-        char domain[255];
-        struct dns_acl *next;
+	char domain[255];
+	struct dns_acl *next;
 };
 
 /* Poiters to head ACL structs */
@@ -62,7 +62,6 @@ void parse_allowed_hosts(char *allowed_hosts);
 int add_ipv4_to_acl(char *ipv4);
 int add_ipv6_to_acl(char *ipv6);
 int add_domain_to_acl(char *domain);
-//int is_an_allowed_host(struct in_addr);
 int is_an_allowed_host(int, void *);
 unsigned int prefix_from_mask(struct in_addr mask);
 void show_acl_lists(void);
