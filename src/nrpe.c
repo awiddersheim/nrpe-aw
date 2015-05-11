@@ -1649,7 +1649,6 @@ int my_system(char *command, int timeout, int *early_timeout, char *output, int 
 		} else {
 			/* read all lines of output - supports Nagios 3.x multiline output */
 			while ((bytes_read = fread(buffer, 1, sizeof(buffer) - 1, fp)) > 0) {
-
 				/* write the output back to the parent process */
 				write(fd[1], buffer, bytes_read);
 			}
