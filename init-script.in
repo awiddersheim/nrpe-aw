@@ -31,32 +31,43 @@ NrpeBin=@bindir@/nrpe
 NrpeCfg=@sysconfdir@/nrpe.cfg
 LockFile=/var/lock/subsys/nrpe
 
+RETVAL=0
+
 # See how we were called.
 case "$1" in
   start)
 	# Start daemons.
 	echo -n "Starting nrpe: "
 	daemon $NrpeBin -c $NrpeCfg -d
+	RETVAL=$?
 	echo
-	touch $LockFile
+	[ $RETVAL = 0 ] && touch $LockFile
 	;;
   stop)
 	# Stop daemons.
 	echo -n "Shutting down nrpe: "
 	killproc nrpe
+	RETVAL=$?
 	echo
-	rm -f $LockFile
+	[ $RETVAL = 0 ] && rm -f $LockFile
 	;;
   restart)
 	$0 stop
 	$0 start
 	;;
+  reload)
+	echo -n "Reloading nrpe"
+	killproc nrpe -HUP
+	RETVAL=$?
+	echo
+	;;
   status)
 	status nrpe
+	RETVAL=$?
 	;;
   *)
-	echo "Usage: nrpe {start|stop|restart|status}"
-	exit 1
+	echo "Usage: nrpe {start|stop|restart|reload|status}"
+	RETVAL=2
 esac
 
-exit 0
+exit $RETVAL
