@@ -16,6 +16,7 @@ FIXES
 - Return UNKNOWN when no plugin out provided.
 - Return UNKNOWN when a timeout is encountered.
 - Add newline to connection error.
+- Fix SSL library extension for AIX. (Jason Cook)
 
 2.15 - 09/06/2013
 -----------------
