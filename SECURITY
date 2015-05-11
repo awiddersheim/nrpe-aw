@@ -125,7 +125,4 @@ You can supply up to 16 arguments to be passed to the command
 for substitution in $ARG$ macros ($ARG1$ - $ARG16$).
 
 
-
-
     -- Ethan Galstad (nagios@nagios.org)
-
