@@ -44,6 +44,8 @@ const SSL_METHOD *meth;
 SSL_CTX *ctx;
 int use_ssl = TRUE;
 char *ssl_ciphers = NULL;
+char *ssl_protocol_options = NULL;
+int ssl_protocols = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
 #else
 int use_ssl = FALSE;
 #endif
@@ -63,7 +65,7 @@ char	config_file[MAX_INPUT_BUFFER] = "nrpe.cfg";
 int	log_facility = LOG_DAEMON;
 int	server_port = DEFAULT_SERVER_PORT;
 char	server_address[NI_MAXHOST] = "";
-struct addrinfo *listen_addrs = NULL;
+struct	addrinfo *listen_addrs = NULL;
 int	listen_socks[MAX_LISTEN_SOCKS];
 int	num_listen_socks = 0;
 int	address_family = AF_UNSPEC;
@@ -257,9 +259,8 @@ int main(int argc, char **argv) {
 			exit(STATE_CRITICAL);
 		}
 
-		/* ADDED 01/19/2004 */
-		/* use only TLSv1 protocol */
-		SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+		/* set SSL protocols */
+		SSL_CTX_set_options(ctx, ssl_protocols);
 
 		/* set SSL ciphers */
 		SSL_CTX_set_cipher_list(ctx, ssl_ciphers ? ssl_ciphers : "ADH");
@@ -626,6 +627,11 @@ int read_config_file(char *filename) {
 		#ifdef HAVE_SSL
 		else if(!strcmp(varname,"ssl_ciphers"))
 			ssl_ciphers=strdup(varvalue);
+
+		else if(!strcmp(varname, "ssl_protocols")) {
+			ssl_protocol_options = strdup(varvalue);
+			ssl_protocols = parse_ssl_protocols(ssl_protocols, ssl_protocol_options);
+		}
 		#endif
 
 		else if (!strcmp(varname, "pid_file"))

@@ -42,6 +42,7 @@
 #include <stdarg.h>
 
 #include "../include/acl.h"
+#include "../include/utils.h"
 
 /* Pointers to ACL structs */
 static struct ip_acl *ip_acl_head, *ip_acl_prev;
@@ -599,26 +600,6 @@ int is_an_allowed_host(int family, void *host) {
 	}
 
 	return 0;
-}
-
-/*
- * The trim() function takes a source string and copies it to the destination string,
- * stripped of leading and training whitespace. The destination string must be
- * allocated at least as large as the source string.
- */
-void trim(char *src, char *dest) {
-	char *sptr, *dptr;
-
-	for (sptr = src; isblank(*sptr) && *sptr; sptr++);   /* Jump past leading spaces */
-
-	for (dptr = dest; !isblank(*sptr) && *sptr;) {
-		*dptr = *sptr;
-		sptr++;
-		dptr++;
-	}
-
-	*dptr = '\0';
-	return;
 }
 
 /*

@@ -143,7 +143,7 @@ int my_create_socket(struct addrinfo *ai, const char *bind_address) {
 			stderr,
 			"getaddrinfo: %s: %s\n",
 			bind_address,
-		        gai_strerror(gaierr)
+			gai_strerror(gaierr)
 		);
 		close(sock);
 		return -1;
@@ -162,7 +162,7 @@ int my_create_socket(struct addrinfo *ai, const char *bind_address) {
 
 /* opens a connection to a remote host */
 int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port,
-               int address_family, const char *bind_address) {
+	       int address_family, const char *bind_address) {
 	int gaierr;
 	int sock = -1;
 	char ntop[NI_MAXHOST], strport[NI_MAXSERV];
@@ -178,7 +178,7 @@ int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port
 			stderr,
 			"Could not resolve hostname %.100s: %s\n",
 			host,
-		        gai_strerror(gaierr)
+			gai_strerror(gaierr)
 		);
 
 		exit(1);
@@ -192,7 +192,7 @@ int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port
 		if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6) continue;
 
 		if (getnameinfo(ai->ai_addr, ai->ai_addrlen, ntop, sizeof(ntop),
-		                strport, sizeof(strport), NI_NUMERICHOST | NI_NUMERICSERV) != 0) {
+				strport, sizeof(strport), NI_NUMERICHOST | NI_NUMERICSERV) != 0) {
 			fprintf(stderr, "my_connect: getnameinfo failed\n");
 			continue;
 		}
@@ -215,7 +215,7 @@ int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port
 				"connect to address %s port %s: %s\n",
 				ntop,
 				strport,
-			        strerror(errno)
+				strerror(errno)
 			);
 			close(sock);
 			sock = -1;
@@ -231,7 +231,7 @@ int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port
 			"connect to host %s port %s: %s\n",
 			host,
 			strport,
-		        strerror(errno)
+			strerror(errno)
 		);
 		return -1;
 	}
@@ -240,7 +240,7 @@ int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port
 }
 
 void add_listen_addr(struct addrinfo **listen_addrs, int address_family,
-                     char *addr, int port) {
+		     char *addr, int port) {
 	struct addrinfo hints, *ai, *aitop;
 	char strport[NI_MAXSERV];
 	int gaierr;
@@ -388,10 +388,75 @@ char *my_strsep(char **stringp, const char *delim) {
 		*end++ = '\0';
 		*stringp = end;
 	} else
-		/* No more delimiters; this is the last token.  */
+		/* No more delimiters; this is the last token.	*/
 		*stringp = NULL;
 
 	return begin;
+}
+
+/*
+ * The trim() function takes a source string and copies it to the destination string,
+ * stripped of leading and training whitespace. The destination string must be
+ * allocated at least as large as the source string.
+ */
+void trim(char *src, char *dest) {
+	char *sptr, *dptr;
+
+	for (sptr = src; isblank(*sptr) && *sptr; sptr++);   /* Jump past leading spaces */
+
+	for (dptr = dest; !isblank(*sptr) && *sptr;) {
+		*dptr = *sptr;
+		sptr++;
+		dptr++;
+	}
+
+	*dptr = '\0';
+	return;
+}
+
+/* Parses SSL protocols from configuration file */
+int parse_ssl_protocols(int ssl_protocols, char *ssl_protocol_options) {
+	char *options = strdup(ssl_protocol_options);
+	int protocols = 0;
+	const char *delim = ",";
+	char *saveptr;
+	char *tok;
+	char *trimmed_tok;
+
+	tok = strtok_r(options, delim, &saveptr);
+
+	while(tok) {
+		trimmed_tok = malloc(sizeof(char) * (strlen(tok) + 1));
+		trim(tok, trimmed_tok);
+
+		if (!strcmp(trimmed_tok, "no-sslv2")) {
+			protocols |= SSL_OP_NO_SSLv2;
+		}
+		else if (!strcmp(trimmed_tok, "no-sslv3")) {
+			protocols |= SSL_OP_NO_SSLv3;
+		}
+		else if (!strcmp(trimmed_tok, "no-tlsv1")) {
+			protocols |= SSL_OP_NO_TLSv1;
+		}
+		#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+		else if (!strcmp(trimmed_tok, "no-tlsv1_1")) {
+			protocols |= SSL_OP_NO_TLSv1_1;
+		}
+		else if (!strcmp(trimmed_tok, "no-tlsv1_2")) {
+			protocols |= SSL_OP_NO_TLSv1_2;
+		}
+		#endif
+
+		free(trimmed_tok);
+		tok = strtok_r(NULL, delim, &saveptr);
+	}
+
+	free(options);
+
+	if (protocols != 0)
+		ssl_protocols = protocols;
+
+	return(ssl_protocols);
 }
 
 /* show license */
