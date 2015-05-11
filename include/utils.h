@@ -53,6 +53,8 @@ void display_license(void);
 
 void trim(char *, char *);
 
+#ifdef HAVE_SSL
 int parse_ssl_protocols(int, char *);
+#endif
 
 #endif

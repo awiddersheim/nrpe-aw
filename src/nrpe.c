@@ -625,10 +625,10 @@ int read_config_file(char *filename) {
 			allow_weak_random_seed = (atoi(varvalue) == 1) ? TRUE : FALSE;
 
 		#ifdef HAVE_SSL
-		else if(!strcmp(varname,"ssl_ciphers"))
-			ssl_ciphers=strdup(varvalue);
+		else if (!strcmp(varname, "ssl_ciphers"))
+			ssl_ciphers = strdup(varvalue);
 
-		else if(!strcmp(varname, "ssl_protocols")) {
+		else if (!strcmp(varname, "ssl_protocols")) {
 			ssl_protocol_options = strdup(varvalue);
 			ssl_protocols = parse_ssl_protocols(ssl_protocols, ssl_protocol_options);
 		}

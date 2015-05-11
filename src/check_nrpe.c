@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 	u_int32_t packet_crc32;
 	u_int32_t calculated_crc32;
 	int16_t result;
-	int rc;
+	int rc = -1;
 	packet send_packet;
 	packet receive_packet;
 	int bytes_to_send;
@@ -183,7 +183,6 @@ int main(int argc, char **argv) {
 			exit(result);
 		}
 	}
-
 	#endif
 
 	/* we're connected and ready to go */

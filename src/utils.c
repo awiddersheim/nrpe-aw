@@ -414,6 +414,7 @@ void trim(char *src, char *dest) {
 	return;
 }
 
+#ifdef HAVE_SSL
 /* Parses SSL protocols from configuration file */
 int parse_ssl_protocols(int ssl_protocols, char *ssl_protocol_options) {
 	char *options = strdup(ssl_protocol_options);
@@ -458,6 +459,7 @@ int parse_ssl_protocols(int ssl_protocols, char *ssl_protocol_options) {
 
 	return(ssl_protocols);
 }
+#endif
 
 /* show license */
 void display_license(void) {
