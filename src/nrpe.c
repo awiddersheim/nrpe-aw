@@ -1292,7 +1292,7 @@ void handle_connection(int sock) {
 	char processed_command[MAX_INPUT_BUFFER];
 	int result = STATE_OK;
 	int early_timeout = FALSE;
-	int rc;
+	int rc = -1;
 	int x;
 	#ifdef DEBUG
 	FILE *errfp;
