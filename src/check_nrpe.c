@@ -130,10 +130,6 @@ int main(int argc, char **argv) {
 			printf("CHECK_NRPE: Error - could not create SSL context.\n");
 			exit(STATE_CRITICAL);
 		}
-
-		/* ADDED 01/19/2004 */
-		/* use only TLSv1 protocol */
-		SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 	}
 	#endif
 
