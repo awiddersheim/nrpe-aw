@@ -929,7 +929,6 @@ void wait_for_connections(void) {
 	socklen_t fromlen;
 	char ipstr[INET6_ADDRSTRLEN];
 	int i;
-	int r;
 
 	struct sockaddr_in myname;
 	struct sockaddr_in *nptr;
@@ -939,8 +938,6 @@ void wait_for_connections(void) {
 	int sock, new_sd;
 	socklen_t addrlen;
 	pid_t pid;
-	fd_set fdread;
-	struct timeval timeout;
 	int retval;
 	#ifdef HAVE_LIBWRAP
 	struct request_info req;
