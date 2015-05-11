@@ -117,6 +117,49 @@ void randomize_buffer(char *buffer, int buffer_size) {
 	return;
 }
 
+/* Creates a socket for the connection. */
+int my_create_socket(struct addrinfo *ai, const char *bind_address) {
+	int sock, gaierr;
+	struct addrinfo hints, *res;
+
+	sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+
+	if (sock < 0)
+		fprintf(stderr, "socket: %.100s\n", strerror(errno));
+
+	/* Bind the socket to an alternative local IP address */
+	if (bind_address == NULL)
+		return sock;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = ai->ai_family;
+	hints.ai_socktype = ai->ai_socktype;
+	hints.ai_protocol = ai->ai_protocol;
+	hints.ai_flags = AI_PASSIVE;
+	gaierr = getaddrinfo(bind_address, NULL, &hints, &res);
+
+	if (gaierr) {
+		fprintf(
+			stderr,
+			"getaddrinfo: %s: %s\n",
+			bind_address,
+		        gai_strerror(gaierr)
+		);
+		close(sock);
+		return -1;
+	}
+
+	if (bind(sock, res->ai_addr, res->ai_addrlen) < 0) {
+		fprintf(stderr, "bind: %s: %s\n", bind_address, strerror(errno));
+		close(sock);
+		freeaddrinfo(res);
+		return -1;
+	}
+
+	freeaddrinfo(res);
+	return sock;
+}
+
 /* opens a connection to a remote host */
 int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port,
                int address_family, const char *bind_address) {
@@ -193,49 +236,6 @@ int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port
 		return -1;
 	}
 
-	return sock;
-}
-
-/* Creates a socket for the connection. */
-int my_create_socket(struct addrinfo *ai, const char *bind_address) {
-	int sock, gaierr;
-	struct addrinfo hints, *res;
-
-	sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
-
-	if (sock < 0)
-		fprintf(stderr, "socket: %.100s\n", strerror(errno));
-
-	/* Bind the socket to an alternative local IP address */
-	if (bind_address == NULL)
-		return sock;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = ai->ai_family;
-	hints.ai_socktype = ai->ai_socktype;
-	hints.ai_protocol = ai->ai_protocol;
-	hints.ai_flags = AI_PASSIVE;
-	gaierr = getaddrinfo(bind_address, NULL, &hints, &res);
-
-	if (gaierr) {
-		fprintf(
-			stderr,
-			"getaddrinfo: %s: %s\n",
-			bind_address,
-		        gai_strerror(gaierr)
-		);
-		close(sock);
-		return -1;
-	}
-
-	if (bind(sock, res->ai_addr, res->ai_addrlen) < 0) {
-		fprintf(stderr, "bind: %s: %s\n", bind_address, strerror(errno));
-		close(sock);
-		freeaddrinfo(res);
-		return -1;
-	}
-
-	freeaddrinfo(res);
 	return sock;
 }
 
