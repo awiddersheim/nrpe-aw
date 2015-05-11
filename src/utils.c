@@ -228,7 +228,7 @@ int my_connect(const char *host, struct sockaddr_storage *hostaddr, u_short port
 	if (sock == -1) {
 		fprintf(
 			stderr,
-			"connect to host %s port %s: %s",
+			"connect to host %s port %s: %s\n",
 			host,
 			strport,
 		        strerror(errno)
