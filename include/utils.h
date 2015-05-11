@@ -5,8 +5,6 @@
  * License: GPL
  * Copyright (c) 1999-2006 Ethan Galstad (nagios@nagios.org)
  *
- * Last Modified: 12-11-2006
- *
  * Description:
  *
  * This file contains common include files and function definitions used in many of the plugins.

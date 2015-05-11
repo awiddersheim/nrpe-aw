@@ -1,7 +1,6 @@
 /*
  * acl.c - a small library for nrpe.c. It adds IPv4 subnets support to ACL in nrpe.
  * Copyright (c) 2011 Kaspersky Lab ZAO
- * Last Modified: 08-10-2011 by Konstantin Malov with Oleg Koreshkov's help
  *
  * Description:
  * acl.c creates two linked lists. One is for IPv4 hosts and networks, another is for domain names.

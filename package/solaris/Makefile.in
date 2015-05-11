@@ -1,7 +1,5 @@
 ###################################
 # Makefile for NRPE Solaris Package
-#
-# Last Modified: 2 Dec 2011
 ###################################
 
 TARGET_OS=@TARGET_OS@

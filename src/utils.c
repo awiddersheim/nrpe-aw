@@ -5,8 +5,6 @@
  * License: GPL
  * Copyright (c) 1999-2006 Ethan Galstad (nagios@nagios.org)
  *
- * Last Modified: 12-11-2006
- *
  * Description:
  *
  * This file contains common network functions used in nrpe and check_nrpe.

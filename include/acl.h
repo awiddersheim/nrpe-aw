@@ -1,7 +1,6 @@
 /*-
  * acl.c - header file for acl.c
  * Copyright (c) 2011 Kaspersky Lab ZAO
- * Last Modified: 08-10-2011 by Konstantin Malov with Oleg Koreshkov's help
  *
  * License: GPL
  *

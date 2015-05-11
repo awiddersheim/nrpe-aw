@@ -2,8 +2,6 @@
 # Sample NRPE Config File
 # Written by: Ethan Galstad (nagios@nagios.org)
 #
-# Last Modified: 11-23-2007
-#
 # NOTES:
 # This is a sample configuration file for the NRPE daemon.  It needs to be
 # located on the remote host that is running the NRPE daemon, not the host
