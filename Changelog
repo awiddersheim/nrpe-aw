@@ -9,6 +9,12 @@ ENHANCEMENTS
 
 FIXES
 - Added ifdefs for complete_SSL_shutdown to compile without SSL. (Matthew L. Daniel)
+- Exit using 'timeout_return_code' if my_connect() times out. (Steve Lowe)
+- Fix help output to explicity show '-c'. (Trevor McDonald)
+- Fix spelling mistakes. (Veres Lajos)
+- Return UNKNOWN when no plugin out provided.
+- Return UNKNOWN when a timeout is encountered.
+- Add newline to connection error.
 
 2.15 - 09/06/2013
 -----------------
