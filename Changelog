@@ -2,7 +2,7 @@
 NRPE Changelog
 **************
 
-2.16 = xx/xx/xxxx
+2.16 = 05/12/2015
 -----------------
 ENHANCEMENTS
 - Added listen_queue_size as configuration option (Vadim Antipov, Kaspersky Lab)
