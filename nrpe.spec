@@ -54,10 +54,10 @@ Requires: bash, grep, nagios-plugins, util-linux, chkconfig, shadow-utils, sed, 
 %endif
 
 %description
-NPRE (Nagios Remote Plugin Executor) is a system daemon that 
-will execute various Nagios plugins locally on behalf of a 
-remote (monitoring) host that uses the check_nrpe plugin.  
-Various plugins that can be executed by the daemon are available 
+NPRE (Nagios Remote Plugin Executor) is a system daemon that
+will execute various Nagios plugins locally on behalf of a
+remote (monitoring) host that uses the check_nrpe plugin.
+Various plugins that can be executed by the daemon are available
 at: http://sourceforge.net/projects/nagiosplug
 
 This package provides the client-side NRPE agent (daemon).
@@ -68,13 +68,13 @@ Summary: Provides nrpe plugin for Nagios.
 Requires: nagios-plugins
 
 %description plugin
-NPRE (Nagios Remote Plugin Executor) is a system daemon that 
-will execute various Nagios plugins locally on behalf of a 
-remote (monitoring) host that uses the check_nrpe plugin.  
-Various plugins that can be executed by the daemon are available 
+NPRE (Nagios Remote Plugin Executor) is a system daemon that
+will execute various Nagios plugins locally on behalf of a
+remote (monitoring) host that uses the check_nrpe plugin.
+Various plugins that can be executed by the daemon are available
 at: http://sourceforge.net/projects/nagiosplug
 
-This package provides the server-side NRPE plugin for 
+This package provides the server-side NRPE plugin for
 Nagios-related applications.
 
 %prep
@@ -219,17 +219,17 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(600,%{nsusr},%{nsgrp})
 %config(noreplace) %{_sysconfdir}/*.cfg
 %defattr(755,%{nsusr},%{nsgrp})
-%doc Changelog LEGAL README 
+%doc Changelog LEGAL README
 
 %files plugin
 %defattr(755,%{nsusr},%{nsgrp})
 %{_libexecdir}
 %defattr(644,%{nsusr},%{nsgrp})
-%doc Changelog LEGAL README 
+%doc Changelog LEGAL README
 
 %changelog
 * Mon Mar 12 2012 Eric Stanley estanley<@>nagios.com
-- Created autoconf input file 
+- Created autoconf input file
 - Updated to support building on AIX
 - Updated install to use make install*
 * Mon Jan 23 2006 Andreas Kasenides ank<@>cs.ucy.ac.cy
