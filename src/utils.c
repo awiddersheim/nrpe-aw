@@ -491,13 +491,13 @@ char *strcompress(char *source) {
 				case '5':  case '6':  case '7':
 					*q = 0;
 					octal = p;
-				while ((p < octal + 3) && (*p >= '0') && (*p <= '7')) {
-					*q = (*q * 8) + (*p - '0');
-					p++;
-				}
-				q++;
-				p--;
-				break;
+					while ((p < octal + 3) && (*p >= '0') && (*p <= '7')) {
+						*q = (*q * 8) + (*p - '0');
+						p++;
+					}
+					q++;
+					p--;
+					break;
 
 				case 'b':
 					*q++ = '\b';
