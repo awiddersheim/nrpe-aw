@@ -1,0 +1,9 @@
+build:
+  image: inetu-centos:el6
+  script:
+    - yum -y install gcc openssl-devel
+    - ./configure --disable-ssl --enable-command-args --enable-bash-command-substitution
+    - make
+    - make clean
+    - ./configure --enable-ssl --enable-command-args --enable-bash-command-substitution
+    - make
